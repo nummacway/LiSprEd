@@ -11,7 +11,7 @@ This is a graphics editor for Game Boy games. It is primarily intended for demak
 
 ## Building
 
-Get Delphi community edition and build.
+Get Delphi Community Edition and build.
 
 The tool was made with Delphi 12.1. Because PNGDelphi has [a very bad bug](https://embt.atlassian.net/servicedesk/customer/portal/1/RSS-2662) (you must have filed a Delphi issue to access that link) when displaying scaled paletted PNGs, this repository contains a copy of that file with a patch I made. There is a chance that this patch will not work with other versions. The _OAM_ editor of this tool will be mostly useless without that patch.
 
@@ -36,8 +36,9 @@ This is a very early preview. Missing features, among many others, are:
 - Optional updating of uses when moving tiles around (how to deal with 8×16 OBJs?)
 - Palette color editing using Windows color picker (double-click)
 - OAM entry swap (currently only OAM entry copy is supported)
+- Make an icon (probably something with a cute duckling)
 - General polishing
-- Maybe export-only palette file formats (`LD [HL] n8` in compiled and ASM code variants).
+- Maybe export-only palette file formats (`LD [HL] n8` in compiled and ASM code variants)
 
 
 ## MDI Children
@@ -71,7 +72,7 @@ You have the complete freedom and full control over the use of the _File_&#8288;
 Just a viewer of the tile data in VRAM. Left is bank 0, right is bank 1.
 
 Non-obvious usage:
-- Drag and drop to swap tiles. Hold <kbd>Ctrl<kbd> to copy instead.
+- Drag and drop to swap tiles. Hold <kbd>Ctrl</kbd> to copy instead.
 - Drag and drop on _Tilemaps_ window to use the tile where dropped.
 - Drag and drop on _OAM_ window to use the tile where dropped.
 
@@ -131,5 +132,5 @@ Use the color picker to pick a color (left-click or right-click).
 Use the pointer icon in the toolbar to move and resize overlays. Use its dropdown to add new overlays, or to remove them (by clicking the name).
 
 Non-obvious usage:
-- Holding <kbd>Ctrl<kbd> equals color picker tool.
+- Holding <kbd>Ctrl</kbd> equals color picker tool.
 - If the _Overlays_ checkbox has the focus, use <kbd>Space</kbd> to toggle.
