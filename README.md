@@ -31,7 +31,7 @@ This is a very early preview. Missing features, among many others, are:
 - End offsets in file offset editor
 - OAM sprite lock (ignore sprite when drawing)
 - _Files_ list drag and drop
-- Relative paths for _File_s.
+- Relative paths for _File_&#8288;s.
 - Drag and drop in _Palettes_ window
 - Optional updating of uses when moving tiles around (how to deal with 8×16 OBJs?)
 - Palette color editing using Windows color picker (double-click)
@@ -44,9 +44,9 @@ This is a very early preview. Missing features, among many others, are:
 
 ### Files
 
-**Note:** _File_ (capitalized and in italics) refers to an entry in the list of this window. A file can be used by multiple _File_s.
+**Note:** _File_ (capitalized and in italics) refers to an entry in the list of this window. A file can be used by multiple _File_&#8288;s.
 
-Here you can define he _File_s to work with. The main `.lse` file only contains the data from this window and the _I/O Registers_ window, as well as overlays. VRAM, OAM, CGB palettes **must** be stored in _File_s to not lose the corresponding data on exit. The following file types exist:
+Here you can define he _File_&#8288;s to work with. The main `.lse` file only contains the data from this window and the _I/O Registers_ window, as well as overlays. VRAM, OAM, CGB palettes **must** be stored in _File_&#8288;s to not lose the corresponding data on exit. The following file types exist:
 - Tiles on Bank 0
 - Tiles on Bank 1 (CGB only)
 - Tile Maps (there is only one file type for both maps, as both use consecutive memory on the same bank)
@@ -55,15 +55,15 @@ Here you can define he _File_s to work with. The main `.lse` file only contains 
 - CGB BG Palettes
 - CGB OBJ PAL
 
-You have the complete freedom and full control over the use of the _File_s. You can use multiple areas of the same file, or store the same data in multiple files - there is absoluty no limit. Configuring offsets is done by setting a start offset in your file, the number of bytes or "pieces" (items) and 
+You have the complete freedom and full control over the use of the _File_&#8288;s. You can use multiple areas of the same file, or store the same data in multiple files - there is absoluty no limit. Configuring offsets is done by setting a start offset in your file, the number of bytes or "pieces" (items) and 
 
 - _Add File_: Pick a file and load it. First you pick a file, then you pick the _File_ type and set the offsets that are in the file. When done, the _File_ is loaded into the tool's VRAM/OAM/Palette and corresponding content is overwritten.
-  - _Auto-Add Emulicious Exports..._: Loads files created by using the _Save As..._ feature in Emulicious' memory editor: `.vrm` (VRAM), `.pal` (Palettes) and `.bin` (OAM) are added, depending on which of them are present. It does not matter which of the three you select in the file picker. Instead of adding and configuring 7 _File_s, this feature does this automatically.
+  - _Auto-Add Emulicious Exports..._: Loads files created by using the _Save As..._ feature in Emulicious' memory editor: `.vrm` (VRAM), `.pal` (Palettes) and `.bin` (OAM) are added, depending on which of them are present. It does not matter which of the three you select in the file picker. Instead of adding and configuring 7 _File_&#8288;s, this feature does this automatically.
 - _New File_: Same as _Add File_, but the _File_ does not have to exist and is not loaded (but saved) when done.
 - _Edit Offsets_: Configure the selected _File_.
 - _Save As_: Pick a new file name for the selected _File_. The _File_ is saved when done.
 - _Remove File_: Remove the selected file from the list. The _File_ will no longer be written when you save, but the current content will be kept in memory.
-- _Reload Files_: Load all _File_s like they were just added. Does not wipe memory before, so memory that no longer corresponds to a _File_ (but did so before) is retained.
+- _Reload Files_: Load all _File_&#8288;s like they were just added. Does not wipe memory before, so memory that no longer corresponds to a _File_ (but did so before) is retained.
 
 
 ### Tiles
