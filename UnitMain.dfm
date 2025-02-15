@@ -75,7 +75,7 @@ object FormMain: TFormMain
     end
     object ViewUpdate: TAction
       Category = 'View'
-      Caption = 'ViewUpdate'
+      Caption = 'Force Update All'
       OnExecute = ViewUpdateExecute
     end
   end

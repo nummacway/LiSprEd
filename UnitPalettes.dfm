@@ -380,18 +380,6 @@ object FormPalettes: TFormPalettes
     Font.Style = []
     ParentFont = False
   end
-  object ShapeBackground: TShape
-    Left = 32
-    Top = 264
-    Width = 48
-    Height = 48
-  end
-  object ShapeForeground: TShape
-    Left = 8
-    Top = 240
-    Width = 48
-    Height = 48
-  end
   object Shape00: TShape
     Left = 8
     Top = 296
@@ -525,11 +513,49 @@ object FormPalettes: TFormPalettes
       OnExit = EditExit
     end
   end
+  object PanelBackground: TPanel
+    Left = 32
+    Top = 264
+    Width = 48
+    Height = 48
+    BevelOuter = bvNone
+    TabOrder = 2
+    OnClick = PanelBackgroundClick
+    OnDblClick = PanelBackgroundDblClick
+    object ShapeBackground: TShape
+      Left = 0
+      Top = 0
+      Width = 48
+      Height = 48
+      Enabled = False
+    end
+  end
+  object PanelForeground: TPanel
+    Left = 8
+    Top = 240
+    Width = 48
+    Height = 48
+    BevelOuter = bvNone
+    TabOrder = 1
+    OnClick = PanelForegroundClick
+    OnDblClick = PanelForegroundDblClick
+    object ShapeForeground: TShape
+      Left = 0
+      Top = 0
+      Width = 48
+      Height = 48
+      Enabled = False
+    end
+  end
   object TimerPicker: TTimer
     Enabled = False
     Interval = 100
     OnTimer = TimerPickerTimer
     Left = 152
     Top = 144
+  end
+  object ColorDialog: TColorDialog
+    Left = 16
+    Top = 152
   end
 end

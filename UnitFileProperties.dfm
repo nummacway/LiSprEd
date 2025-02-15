@@ -73,7 +73,7 @@ object FormFileProperties: TFormFileProperties
       Height = 15
       Caption = 'Size:'
     end
-    object Label7: TLabel
+    object LabelSizeOf: TLabel
       Left = 126
       Top = 45
       Width = 11
@@ -106,7 +106,6 @@ object FormFileProperties: TFormFileProperties
       Font.Style = []
       ParentFont = False
       TabOrder = 0
-      Text = 'xABCD'
       OnChange = EditFileOffsetBytesChange
     end
     object EditFileOffsetPieces: TEdit
@@ -122,11 +121,10 @@ object FormFileProperties: TFormFileProperties
       Font.Style = []
       ParentFont = False
       TabOrder = 1
-      Text = 'xABD'
       OnChange = EditFileOffsetPiecesChange
       OnExit = EditFileOffsetBytesChange
     end
-    object Edit2: TEdit
+    object EditFileOffsetToBytes: TEdit
       Left = 146
       Top = 16
       Width = 42
@@ -141,9 +139,8 @@ object FormFileProperties: TFormFileProperties
       ParentFont = False
       ReadOnly = True
       TabOrder = 2
-      Text = 'xABCD'
     end
-    object Edit9: TEdit
+    object EditFileOffsetToPieces: TEdit
       Left = 189
       Top = 16
       Width = 35
@@ -159,7 +156,6 @@ object FormFileProperties: TFormFileProperties
       ParentFont = False
       ReadOnly = True
       TabOrder = 3
-      Text = 'xABCD'
     end
     object EditSizeBytes: TEdit
       Left = 40
@@ -173,7 +169,6 @@ object FormFileProperties: TFormFileProperties
       Font.Style = []
       ParentFont = False
       TabOrder = 4
-      Text = 'xABCD'
       OnChange = EditSizeBytesChange
     end
     object EditSizePieces: TEdit
@@ -189,7 +184,6 @@ object FormFileProperties: TFormFileProperties
       Font.Style = []
       ParentFont = False
       TabOrder = 5
-      Text = 'xABD'
       OnChange = EditSizePiecesChange
       OnExit = EditSizeBytesChange
     end
@@ -208,7 +202,6 @@ object FormFileProperties: TFormFileProperties
       ParentFont = False
       ReadOnly = True
       TabOrder = 6
-      Text = 'xABCD'
     end
     object EditSizeOfPieces: TEdit
       Left = 189
@@ -226,7 +219,6 @@ object FormFileProperties: TFormFileProperties
       ParentFont = False
       ReadOnly = True
       TabOrder = 7
-      Text = 'xABCD'
     end
     object EditGBOffsetBytes: TEdit
       Left = 40
@@ -240,7 +232,6 @@ object FormFileProperties: TFormFileProperties
       Font.Style = []
       ParentFont = False
       TabOrder = 8
-      Text = 'xABCD'
       OnChange = EditGBOffsetBytesChange
     end
     object EditGBOffsetPieces: TEdit
@@ -256,11 +247,10 @@ object FormFileProperties: TFormFileProperties
       Font.Style = []
       ParentFont = False
       TabOrder = 9
-      Text = 'xABD'
       OnChange = EditGBOffsetPiecesChange
       OnExit = EditGBOffsetBytesChange
     end
-    object Edit5: TEdit
+    object EditGBOffsetToBytes: TEdit
       Left = 146
       Top = 68
       Width = 42
@@ -275,9 +265,8 @@ object FormFileProperties: TFormFileProperties
       ParentFont = False
       ReadOnly = True
       TabOrder = 10
-      Text = 'xABCD'
     end
-    object Edit10: TEdit
+    object EditGBOffsetToPieces: TEdit
       Left = 189
       Top = 68
       Width = 35
@@ -293,7 +282,6 @@ object FormFileProperties: TFormFileProperties
       ParentFont = False
       ReadOnly = True
       TabOrder = 11
-      Text = 'xABCD'
     end
   end
   object ButtonOK: TButton

@@ -191,6 +191,9 @@ begin
 end;
 
 procedure TFormOAM.ImageDragDrop(Sender, Source: TObject; X, Y: Integer);
+var
+  Temp: TOAMObj;
+  i: Integer;
 begin
   case FProject.DnDType of
     ddTile:
@@ -198,10 +201,46 @@ begin
         FProject.OAM.OAM[(Sender as TComponent).Tag].Tile := (FProject.DnDData - $8000) div 16;
         FProject.OAM.OAM[(Sender as TComponent).Tag].Attributes.Bank := FProject.DnDData2;
       end;
-    ddOAM: FProject.OAM.OAM[(Sender as TComponent).Tag] := FProject.OAM.OAM[FProject.DnDData];
+    ddOAM:
+      begin
+        if GetAsyncKeyState(VK_CONTROL) >= 0 then
+        begin
+          Temp := FProject.OAM.OAM[FProject.DnDData];
+          if GetAsyncKeyState(VK_SHIFT) >= 0 then
+          begin
+            // swap
+            FProject.OAM.OAM[FProject.DnDData] := FProject.OAM.OAM[(Sender as TComponent).Tag];
+            FProject.OAM.OAM[(Sender as TComponent).Tag] := Temp;
+            FProject.UpdateOAMCacheByIndex(FProject.DnDData);
+            FProject.TriggerOAMUpdate(FProject.DnDData);
+          end
+          else
+          begin
+            // move
+            if FProject.DnDData > (Sender as TComponent).Tag then
+            begin
+              for i := FProject.DnDData - 1 downto (Sender as TComponent).Tag do
+              FProject.OAM.OAM[i+1] := FProject.OAM.OAM[i];
+              FProject.OAM.OAM[(Sender as TComponent).Tag] := Temp;
+            end
+            else
+            if FProject.DnDData < (Sender as TComponent).Tag then
+            begin
+              for i := FProject.DnDData + 1 to (Sender as TComponent).Tag do
+              FProject.OAM.OAM[i-1] := FProject.OAM.OAM[i];
+              FProject.OAM.OAM[(Sender as TComponent).Tag] := Temp;
+            end;
+            FProject.UpdateOAMCache();
+            FProject.TriggerFullUpdate();
+            Exit;
+          end;
+        end
+        else
+        FProject.OAM.OAM[(Sender as TComponent).Tag] := FProject.OAM.OAM[FProject.DnDData];
+      end;
   end;
-  FProject.UpdateOAMCacheByIndex((Sender as TImage).Tag);
-  FProject.TriggerOAMUpdate((Sender as TImage).Tag);
+  FProject.UpdateOAMCacheByIndex((Sender as TComponent).Tag);
+  FProject.TriggerOAMUpdate((Sender as TComponent).Tag);
 end;
 
 procedure TFormOAM.ImageDragOver(Sender, Source: TObject; X, Y: Integer; State: TDragState; var Accept: Boolean);

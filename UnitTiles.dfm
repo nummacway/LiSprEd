@@ -2,6 +2,7 @@ object FormTiles: TFormTiles
   Left = 0
   Top = 0
   BorderIcons = [biSystemMenu]
+  BorderStyle = bsSingle
   Caption = 'Tiles'
   ClientHeight = 384
   ClientWidth = 512
@@ -22,6 +23,7 @@ object FormTiles: TFormTiles
     Width = 512
     Height = 384
     Align = alClient
+    Proportional = True
     Stretch = True
     OnDragDrop = ImageDragDrop
     OnDragOver = ImageDragOver

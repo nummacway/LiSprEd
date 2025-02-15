@@ -634,7 +634,6 @@ var
   OAMXs: TArray<Integer>;
   OAMXMaxs: TArray<Integer>;
   OAMPs: TArray<PByte>;
-  OAM: Byte;
   Pixel: PByte;
   HasOBJPixel: Boolean;
   WinOffset, BGOffset: Word;

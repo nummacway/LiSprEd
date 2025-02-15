@@ -15,20 +15,20 @@ type
     EditFileOffsetBytes: TEdit;
     EditFileOffsetPieces: TEdit;
     Label3: TLabel;
-    Edit2: TEdit;
-    Edit9: TEdit;
+    EditFileOffsetToBytes: TEdit;
+    EditFileOffsetToPieces: TEdit;
     Label4: TLabel;
     EditSizeBytes: TEdit;
     EditSizePieces: TEdit;
-    Label7: TLabel;
+    LabelSizeOf: TLabel;
     EditSizeOfBytes: TEdit;
     EditSizeOfPieces: TEdit;
     Label5: TLabel;
     EditGBOffsetBytes: TEdit;
     EditGBOffsetPieces: TEdit;
     Label6: TLabel;
-    Edit5: TEdit;
-    Edit10: TEdit;
+    EditGBOffsetToBytes: TEdit;
+    EditGBOffsetToPieces: TEdit;
     ButtonOK: TButton;
     ButtonCancel: TButton;
     procedure FormCreate(Sender: TObject);
@@ -93,7 +93,7 @@ begin
   else
   EditSizeBytes.TextNoChange := 'x' + IntToHex(FC.GetMaxPieces() * FC.GetBytesPerPiece(), 0);
   EditGBOffsetBytes.TextNoChange := 'x' + IntToHex(FC.GetMinStartOffset(), 4);
-  EditSizeOfBytes.TextNoChange := IntToStr(FFileSize);
+  EditSizeOfBytes.TextNoChange := 'x' + IntToHex(FFileSize, 0);
   if FFileSize mod FC.GetBytesPerPiece() = 0 then
   EditSizeOfPieces.TextNoChange := IntToStr(FFileSize div FC.GetBytesPerPiece())
   else
@@ -119,6 +119,7 @@ var
 begin
   if TryStrToInt(EditFileOffsetPieces.Text, Temp) then
   EditFileOffsetBytes.TextNoChange := 'x' + IntToHex(Temp*FC.GetBytesPerPiece(), 0);
+  Validate();
 end;
 
 procedure TFormFileProperties.EditGBOffsetBytesChange(Sender: TObject);
@@ -138,7 +139,8 @@ var
   Temp: Integer;
 begin
   if TryStrToInt(EditGBOffsetPieces.Text, Temp) then
-  EditGBOffsetBytes.TextNoChange := 'x' + IntToHex(Temp*FC.GetBytesPerPiece(), 4);
+  EditGBOffsetBytes.TextNoChange := 'x' + IntToHex(FC.GetMinStartOffset()+Temp*FC.GetBytesPerPiece(), 4);
+  Validate();
 end;
 
 procedure TFormFileProperties.EditSizeBytesChange(Sender: TObject);
@@ -159,6 +161,7 @@ var
 begin
   if TryStrToInt(EditSizePieces.Text, Temp) then
   EditSizeBytes.TextNoChange := 'x' + IntToHex(Temp*FC.GetBytesPerPiece(), 0);
+  Validate();
 end;
 
 procedure TFormFileProperties.FormCreate(Sender: TObject);
@@ -197,6 +200,9 @@ begin
   FFileName := Value.FileName;
   FMustLoad := False; // questionable, but basically we have to do this
   FFileSize := 0;
+  LabelSizeOf.Hide();
+  EditSizeOfBytes.Hide();
+  EditSizeOfPieces.Hide();
   for i := Low(FileClasses) to High(FileClasses) do
   if Value is FileClasses[i] then
   begin
@@ -253,7 +259,17 @@ begin
 
   if Valid then
   begin
+    EditFileOffsetToBytes.Text := 'x' + IntToHex(FileOffset + Size - 1, 4);
+    if (FileOffset + Size) mod FC.GetBytesPerPiece() = 0 then
+    EditFileOffsetToPieces.Text := IntToStr((FileOffset + Size) div FC.GetBytesPerPiece() - 1)
+    else
+    EditFileOffsetToPieces.Text := '';
 
+    EditGBOffsetToBytes.Text := 'x' + IntToHex(GBOffset + Size - 1, 4);
+    if (GBOffset + Size) mod FC.GetBytesPerPiece() = 0 then
+    EditGBOffsetToPieces.Text := IntToStr((GBOffset + Size - FC.GetMinStartOffset()) div FC.GetBytesPerPiece() - 1)
+    else
+    EditGBOffsetToPieces.Text := '';
   end;
 
   ButtonOK.Enabled := Valid;

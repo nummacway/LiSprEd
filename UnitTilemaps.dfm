@@ -35,6 +35,7 @@ object FormTilemaps: TFormTilemaps
     Top = 55
     Width = 512
     Height = 512
+    Proportional = True
     Stretch = True
     Visible = False
     OnDragDrop = ImageDragDrop

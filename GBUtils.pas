@@ -189,30 +189,19 @@ type
 
   TLCDC = record
     private
-      function GetBGTileMap: Boolean;
-      function GetBGWindowEnablePriority: Boolean;
-      function GetBGWindowTiles: Boolean;
-      function GetOBJEnable: Boolean;
-      function GetOBJSize: Boolean;
-      function GetWindoeEnable: Boolean;
-      function GetWindowTileMap: Boolean;
-      procedure SetBGTileMap(const Value: Boolean);
-      procedure SetBGWindowEnablePriority(const Value: Boolean);
-      procedure SetBGWindowTiles(const Value: Boolean);
-      procedure SetOBJEnable(const Value: Boolean);
-      procedure SetOBJSize(const Value: Boolean);
-      procedure SetWindowEnable(const Value: Boolean);
-      procedure SetWindowTileMap(const Value: Boolean);
+      function GetAsByte(): Byte;
+      procedure SetAsByte(Value: Byte);
+    strict private // to make clear that this is not currently in use
+      LCDEnable: Boolean;
     public
-      AsByte: Byte;
-      // do we need LCD enable?
-      property WindowTileMap: Boolean read GetWindowTileMap write SetWindowTileMap;
-      property WindowEnable: Boolean read GetWindoeEnable write SetWindowEnable;
-      property BGWindowTiles: Boolean read GetBGWindowTiles write SetBGWindowTiles;
-      property BGTileMap: Boolean read GetBGTileMap write SetBGTileMap;
-      property OBJSize: Boolean read GetOBJSize write SetOBJSize;
-      property OBJEnable: Boolean read GetOBJEnable write SetOBJEnable;
-      property BGWindowEnablePriority: Boolean read GetBGWindowEnablePriority write SetBGWindowEnablePriority;
+      WindowTileMap: Boolean;
+      WindowEnable: Boolean;
+      BGWindowTiles: Boolean;
+      BGTileMap: Boolean;
+      OBJSize: Boolean;
+      OBJEnable: Boolean;
+      BGWindowEnablePriority: Boolean;
+      property AsByte: Byte read GetAsByte write SetAsByte;
   end;
 
   TTileUpdateEvent = procedure (Sender: TProject; TileAddr: Word; Bank: Boolean) of object;
@@ -222,7 +211,7 @@ type
   TRegisterUpdateEvent = procedure (Sender: TProject; Registers: TRegisters) of object;
   TFullUpdateEvent = procedure (Sender: TProject) of object;
 
-  TDnDType = (ddNone = 0, ddTile, ddOAM, ddOverlayMove, ddOverlayResize);
+  TDnDType = (ddNone = 0, ddTile, ddOAM, ddOverlayMove, ddOverlayResize, ddFile, ddPalColor);
 
   TProject = class
     private
@@ -275,7 +264,8 @@ type
       procedure TriggerTileUpdate(Tile: Byte; IsObj: Boolean; Bank: Boolean); overload;
       procedure TriggerTileUpdate(TileAddr: Word; Bank: Boolean); overload;
       procedure TriggerTileMapUpdate(Index, X, Y: Byte);
-      procedure TriggerPaletteUpdate(IsObj: Boolean; PaletteIndex: Byte; ColorIndex: Byte);
+      procedure TriggerPaletteUpdate(IsObj: Boolean; Index: Byte); overload;
+      procedure TriggerPaletteUpdate(IsObj: Boolean; PaletteIndex: Byte; ColorIndex: Byte); overload;
       procedure TriggerOAMUpdate(OAMIndex: Byte);
       procedure TriggerRegisterUpdate(Registers: TRegisters);
       procedure TriggerFullUpdate();
@@ -468,7 +458,6 @@ procedure TTileAttributes.WriteTileTo(Target: TPNGImage; X, Y: Integer; Tile: By
 var
   PalIndex: array[0..3] of Byte;
   Start: Word;
-  i, j: Integer;
 begin
   // Get palette indizes
   if Project.IsCGB then
@@ -496,7 +485,7 @@ begin
   Start := $8000 + Tile * 16;
   if Tile < 128 then
   if not IsObj then
-  if not Project.LCDC.GetBGWindowTiles then
+  if not Project.LCDC.BGWindowTiles then
   Start := $9000 + ShortInt(Tile) * 16;
 
   Project.ReadFromTile(Target, X, Y, Start, Bank and (ForceSupportBank or Project.IsCGB), PalIndex, (IsObj or Project.IsCGB) and XFlip, (IsObj or Project.IsCGB) and YFlip);
@@ -662,7 +651,7 @@ begin
     end;
 
   Inc(LY, 16);
-  if LCDC.GetOBJSize() then
+  if LCDC.OBJSize then
   MaxY := 15
   else
   MaxY := 7;
@@ -812,6 +801,11 @@ begin
   Event(Self, OAMIndex);
 end;
 
+procedure TProject.TriggerPaletteUpdate(IsObj: Boolean; Index: Byte);
+begin
+  TriggerPaletteUpdate(IsObj, (Index shr 2) and 7, Index and 3);
+end;
+
 procedure TProject.TriggerPaletteUpdate(IsObj: Boolean; PaletteIndex, ColorIndex: Byte);
 var
   Event: TPaletteUpdateEvent;
@@ -864,8 +858,11 @@ begin
 end;
 
 procedure TProject.UpdateOAMCacheByIndex(Index: Byte);
+var
+  x, y: Integer;
+  PB: PByteArray;
 begin
-  if LCDC.GetOBJSize then
+  if LCDC.OBJSize then
   begin
     if OAM.OAM[Index].Attributes.YFlip then
     begin
@@ -879,7 +876,15 @@ begin
     end;
   end
   else
-  OAM.OAM[Index].Attributes.WriteTileTo(OAMImages[Index], 0, 0, OAM.OAM[Index].Tile, True, Self);
+  begin
+    OAM.OAM[Index].Attributes.WriteTileTo(OAMImages[Index], 0, 0, OAM.OAM[Index].Tile, True, Self);
+    for y := 8 to 15 do
+    begin
+      PB := OAMImages[Index].Scanline[y];
+      for x := 0 to 7 do
+      PB^[x] := 0;
+    end;
+  end;
 end;
 
 procedure TProject.UpdateOAMCacheByTile(Tile: Byte; Bank: Boolean; TriggerEvent: Boolean);
@@ -965,7 +970,6 @@ end;
 procedure TProject.UpdateTileMapCacheByTile(Tile: Byte; Bank: Boolean);
 var
   Index, x, y: Integer;
-  Offset: Integer;
 begin
   for Index := 0 to 1 do
   for x := 0 to 31 do
@@ -1107,95 +1111,28 @@ end;
 
 { TLCDC }
 
-function TLCDC.GetBGTileMap: Boolean;
+function TLCDC.GetAsByte: Byte;
 begin
-  Result := (AsByte and $08) <> 0;
+  Result := (Byte(LCDEnable             ) shl 7) or
+            (Byte(WindowTileMap         ) shl 6) or
+            (Byte(WindowEnable          ) shl 5) or
+            (Byte(BGWindowTiles         ) shl 4) or
+            (Byte(BGTileMap             ) shl 3) or
+            (Byte(OBJSize               ) shl 2) or
+            (Byte(OBJEnable             ) shl 1) or
+            (Byte(BGWindowEnablePriority) shl 0);
 end;
 
-function TLCDC.GetBGWindowEnablePriority: Boolean;
+procedure TLCDC.SetAsByte(Value: Byte);
 begin
-  Result := (AsByte and $01) <> 0;
-end;
-
-function TLCDC.GetBGWindowTiles: Boolean;
-begin
-  Result := (AsByte and $10) <> 0;
-end;
-
-function TLCDC.GetOBJEnable: Boolean;
-begin
-  Result := (AsByte and $02) <> 0;
-end;
-
-function TLCDC.GetOBJSize: Boolean;
-begin
-  Result := (AsByte and $04) <> 0;
-end;
-
-function TLCDC.GetWindoeEnable: Boolean;
-begin
-  Result := (AsByte and $20) <> 0;
-end;
-
-function TLCDC.GetWindowTileMap: Boolean;
-begin
-  Result := (AsByte and $40) <> 0;
-end;
-
-procedure TLCDC.SetBGTileMap(const Value: Boolean);
-begin
-  if Value then
-  AsByte := AsByte or $08
-  else
-  AsByte := AsByte and not $08;
-end;
-
-procedure TLCDC.SetBGWindowEnablePriority(const Value: Boolean);
-begin
-  if Value then
-  AsByte := AsByte or $01
-  else
-  AsByte := AsByte and not $01;
-end;
-
-procedure TLCDC.SetBGWindowTiles(const Value: Boolean);
-begin
-  if Value then
-  AsByte := AsByte or $10
-  else
-  AsByte := AsByte and not $10;
-end;
-
-procedure TLCDC.SetOBJEnable(const Value: Boolean);
-begin
-  if Value then
-  AsByte := AsByte or $02
-  else
-  AsByte := AsByte and not $02;
-end;
-
-procedure TLCDC.SetOBJSize(const Value: Boolean);
-begin
-  if Value then
-  AsByte := AsByte or $04
-  else
-  AsByte := AsByte and not $04;
-end;
-
-procedure TLCDC.SetWindowEnable(const Value: Boolean);
-begin
-  if Value then
-  AsByte := AsByte or $20
-  else
-  AsByte := AsByte and not $20;
-end;
-
-procedure TLCDC.SetWindowTileMap(const Value: Boolean);
-begin
-  if Value then
-  AsByte := AsByte or $40
-  else
-  AsByte := AsByte and not $40;
+  LCDEnable              := (Value and $80) <> 0;
+  WindowTileMap          := (Value and $40) <> 0;
+  WindowEnable           := (Value and $20) <> 0;
+  BGWindowTiles          := (Value and $10) <> 0;
+  BGTileMap              := (Value and $08) <> 0;
+  OBJSize                := (Value and $04) <> 0;
+  OBJEnable              := (Value and $02) <> 0;
+  BGWindowEnablePriority := (Value and $01) <> 0;
 end;
 
 { TFile }

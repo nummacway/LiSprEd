@@ -83,6 +83,9 @@ type
     Shape00: TShape;
     ShapePicker: TShape;
     TimerPicker: TTimer;
+    PanelForeground: TPanel;
+    PanelBackground: TPanel;
+    ColorDialog: TColorDialog;
     procedure Shape00MouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
     procedure SpinEditRGBChange(Sender: TObject);
@@ -96,9 +99,18 @@ type
     procedure EditCGBChange(Sender: TObject);
     procedure EditExit(Sender: TObject);
     procedure EditCSSChange(Sender: TObject);
+    procedure PanelForegroundClick(Sender: TObject);
+    procedure PanelBackgroundClick(Sender: TObject);
+    procedure PanelBackgroundDblClick(Sender: TObject);
+    procedure PanelForegroundDblClick(Sender: TObject);
+    procedure Shape00StartDrag(Sender: TObject; var DragObject: TDragObject);
+    procedure Shape00DragOver(Sender, Source: TObject; X, Y: Integer;
+      State: TDragState; var Accept: Boolean);
+    procedure Shape00DragDrop(Sender, Source: TObject; X, Y: Integer);
   private
     { Private-Deklarationen }
-    procedure SetNewColor(Color: TCGBColor);
+    procedure SetNewColor(Color: TCGBColor); overload;
+    procedure SetNewColor(Color: TColor); overload;
     var
       FProject: TProject;
       FIsCGB: Boolean;
@@ -156,12 +168,20 @@ begin
   begin
     BGSwatches[(i shl 2) or j].Tag := (i shl 2) or j;
     BGSwatches[(i shl 2) or j].OnMouseDown := ShapeMouseDown;
+    BGSwatches[(i shl 2) or j].DragMode := dmAutomatic;
+    BGSwatches[(i shl 2) or j].OnStartDrag := Shape00StartDrag;
+    BGSwatches[(i shl 2) or j].OnDragDrop := Shape00DragDrop;
+    BGSwatches[(i shl 2) or j].OnDragOver := Shape00DragOver;
   end;
   for i := 0 to 7 do
   for j := 1 to 3 do
   begin
     OBJSwatches[(i shl 2) or j].Tag := (1 shl 6) or (i shl 2) or j;
     OBJSwatches[(i shl 2) or j].OnMouseDown := ShapeMouseDown;
+    OBJSwatches[(i shl 2) or j].DragMode := dmAutomatic;
+    OBJSwatches[(i shl 2) or j].OnStartDrag := Shape00StartDrag;
+    OBJSwatches[(i shl 2) or j].OnDragDrop := Shape00DragDrop;
+    OBJSwatches[(i shl 2) or j].OnDragOver := Shape00DragOver;
   end;
 
   FIsCGB := True;
@@ -196,6 +216,44 @@ end;
 procedure TFormPalettes.EditExit(Sender: TObject);
 begin
   UpdateSelection();
+end;
+
+procedure TFormPalettes.PanelBackgroundClick(Sender: TObject);
+begin
+  if not BackgroundIsTrans then
+  begin
+    EditingForeground := True;
+    UpdateSelection;
+  end;
+end;
+
+procedure TFormPalettes.PanelBackgroundDblClick(Sender: TObject);
+begin
+  if not BackgroundIsTrans then
+  begin
+    ColorDialog.Color := ShapeBackground.Brush.Color;
+    if ColorDialog.Execute() then
+    SetNewColor(ColorDialog.Color);
+  end;
+end;
+
+procedure TFormPalettes.PanelForegroundClick(Sender: TObject);
+begin
+  if not ForegroundIsTrans then
+  begin
+    EditingForeground := True;
+    UpdateSelection;
+  end;
+end;
+
+procedure TFormPalettes.PanelForegroundDblClick(Sender: TObject);
+begin
+  if not ForegroundIsTrans then
+  begin
+    ColorDialog.Color := ShapeForeground.Brush.Color;
+    if ColorDialog.Execute() then
+    SetNewColor(ColorDialog.Color);
+  end;
 end;
 
 procedure TFormPalettes.ProjectFullUpdate(Sender: TProject);
@@ -313,12 +371,62 @@ begin
   FProject.TriggerPaletteUpdate(IsObj, PaletteIndex, ColorIndex);
 end;
 
+procedure TFormPalettes.SetNewColor(Color: TColor);
+var
+  Temp: TCGBColor;
+begin
+  Temp.Color := Color;
+  SetNewColor(Temp);
+end;
+
 procedure TFormPalettes.SetProject(Project: TProject);
 begin
   FProject := Project;
   Project.FullUpdateEvents.Add(ProjectFullUpdate);
   Project.PaletteUpdateEvents.Add(ProjectPaletteUpdate);
   Project.RegisterUpdateEvents.Add(ProjectRegisterUpdate);
+end;
+
+procedure TFormPalettes.Shape00DragDrop(Sender, Source: TObject; X, Y: Integer);
+type
+  PCGBColor = ^TCGBColor;
+var
+  SourceRef: PCGBColor;
+  TargetRef: PCGBColor;
+  Temp: TCGBColor;
+  TargetIsObj: Boolean;
+  TargetIndex: Byte;
+begin
+  if FProject.DnDData2 then
+  SourceRef := @FProject.CGBOBJPal[FProject.DnDData shr 2][FProject.DnDData and 3]
+  else
+  SourceRef := @FProject.CGBBGPal[FProject.DnDData shr 2][FProject.DnDData and 3];
+
+  TargetIsObj := ((Sender as TShape).Tag shr 6) = 1;
+  TargetIndex := (Sender as TShape).Tag and $1f;
+
+  if TargetIsObj then
+  TargetRef := @FProject.CGBOBJPal[TargetIndex shr 2][TargetIndex and 3]
+  else
+  TargetRef := @FProject.CGBBGPal[TargetIndex shr 2][TargetIndex and 3];
+
+  if GetAsyncKeyState(VK_CONTROL) >= 0 then
+  begin
+    Temp := SourceRef^;
+    SourceRef^ := TargetRef^;
+    TargetRef^ := Temp;
+    FProject.UpdatePAL();
+    FProject.TriggerPaletteUpdate(FProject.DnDData2, FProject.DnDData);
+  end
+  else
+  TargetRef^ := SourceRef^;
+  FProject.UpdatePAL();
+  FProject.TriggerPaletteUpdate(TargetIsObj, TargetIndex);
+end;
+
+procedure TFormPalettes.Shape00DragOver(Sender, Source: TObject; X, Y: Integer; State: TDragState; var Accept: Boolean);
+begin
+  Accept := FProject.DnDType = ddPalColor;
 end;
 
 procedure TFormPalettes.Shape00MouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
@@ -341,6 +449,13 @@ begin
       UpdateSelection();
     end;
   end;
+end;
+
+procedure TFormPalettes.Shape00StartDrag(Sender: TObject; var DragObject: TDragObject);
+begin
+  FProject.DnDData := (Sender as TShape).Tag and $1f;
+  FProject.DnDData2 := ((Sender as TShape).Tag shr 6) = 1;
+  FProject.DnDType := ddPalColor;
 end;
 
 procedure TFormPalettes.ShapeMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);

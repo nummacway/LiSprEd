@@ -46,12 +46,17 @@ object FormFiles: TFormFiles
         Width = 45
       end>
     DoubleBuffered = True
+    DragMode = dmAutomatic
     ReadOnly = True
     RowSelect = True
     ParentDoubleBuffered = False
     TabOrder = 0
     ViewStyle = vsReport
+    OnEndDrag = ListViewEndDrag
+    OnDragDrop = ListViewDragDrop
+    OnDragOver = ListViewDragOver
     OnSelectItem = ListViewSelectItem
+    OnStartDrag = ListViewStartDrag
   end
   object Panel1: TPanel
     Left = 0

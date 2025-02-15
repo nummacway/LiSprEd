@@ -31,6 +31,11 @@ type
     procedure ButtonNewClick(Sender: TObject);
     procedure ButtonReloadClick(Sender: TObject);
     procedure ButtonSaveAsClick(Sender: TObject);
+    procedure ListViewStartDrag(Sender: TObject; var DragObject: TDragObject);
+    procedure ListViewDragOver(Sender, Source: TObject; X, Y: Integer;
+      State: TDragState; var Accept: Boolean);
+    procedure ListViewDragDrop(Sender, Source: TObject; X, Y: Integer);
+    procedure ListViewEndDrag(Sender, Target: TObject; X, Y: Integer);
   private
     { Private-Deklarationen }
     var
@@ -114,6 +119,9 @@ var
 begin
   for DataFile in FProject.Files do
   DataFile.LoadFromFile();
+  FProject.UpdateTileMapCache();
+  FProject.UpdateOAMCache();
+  FProject.UpdatePAL();
   FProject.TriggerFullUpdate();
 end;
 
@@ -148,11 +156,44 @@ begin
   end;
 end;
 
+procedure TFormFiles.ListViewDragDrop(Sender, Source: TObject; X, Y: Integer);
+var
+  TargetIndex: Integer;
+begin
+  TargetIndex := ListView.GetItemAt(X, Y).Index;
+  FProject.Files.Move(FProject.DnDData, TargetIndex);
+  UpdateList();
+end;
+
+procedure TFormFiles.ListViewDragOver(Sender, Source: TObject; X, Y: Integer;
+  State: TDragState; var Accept: Boolean);
+begin
+  Accept := False;
+  if FProject.DnDType = ddFile then
+  Accept := Assigned(ListView.GetItemAt(X, Y));
+end;
+
+procedure TFormFiles.ListViewEndDrag(Sender, Target: TObject; X, Y: Integer);
+begin
+  FProject.DnDType := ddNone;
+end;
+
 procedure TFormFiles.ListViewSelectItem(Sender: TObject; Item: TListItem; Selected: Boolean);
 begin
    ButtonEdit.Enabled := ListView.SelCount = 1;
    ButtonSaveAs.Enabled := ListView.SelCount = 1;
    ButtonRemove.Enabled := ListView.SelCount > 0;
+   if ListView.SelCount = 1 then
+   ListView.DragMode := dmAutomatic
+   else
+   ListView.DragMode := dmManual;
+end;
+
+procedure TFormFiles.ListViewStartDrag(Sender: TObject;
+  var DragObject: TDragObject);
+begin
+  FProject.DnDType := ddFile;
+  FProject.DnDData := ListView.Selected.Index;
 end;
 
 procedure TFormFiles.MenuItemAutoAddEmuliciousExportsClick(Sender: TObject);

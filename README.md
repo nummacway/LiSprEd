@@ -28,14 +28,10 @@ The tool was made with Delphi 12.1. Because PNGDelphi has [a very bad bug](https
 
 This is a very early preview. Missing features, among many others, are:
 - Quit/save confirmation
-- End offsets in file offset editor
+- Undo/redo
 - OAM sprite lock (ignore sprite when drawing)
-- _Files_ list drag and drop
 - Relative paths for _File_&#8288;s.
-- Drag and drop in _Palettes_ window
 - Optional updating of uses when moving tiles around (how to deal with 8×16 OBJs?)
-- Palette color editing using Windows color picker (double-click)
-- OAM entry swap (currently only OAM entry copy is supported)
 - Make an icon (probably something with a cute duckling)
 - General polishing
 - Maybe export-only palette file formats (`LD [HL] n8` in compiled and ASM code variants)
@@ -56,20 +52,23 @@ Here you can define he _File_&#8288;s to work with. The main `.lse` file only co
 - CGB BG Palettes
 - CGB OBJ PAL
 
-You have the complete freedom and full control over the use of the _File_&#8288;s. You can use multiple areas of the same file, or store the same data in multiple files - there is absoluty no limit. Configuring offsets is done by setting a start offset in your file, the number of bytes or "pieces" (items) and 
+You have the complete freedom and full control over the use of the _File_&#8288;s. You can use multiple areas of the same file, or store the same data in multiple files - there is absoluty no limit. Configuring offsets is done by setting a start offset in your file, the number of bytes or "pieces" (items) and start offset in the Game Boy's memory (a zero-based addressing is used for CGB palettes since we don't know where they go).
 
 - _Add File_: Pick a file and load it. First you pick a file, then you pick the _File_ type and set the offsets that are in the file. When done, the _File_ is loaded into the tool's VRAM/OAM/Palette and corresponding content is overwritten.
-  - _Auto-Add Emulicious Exports..._: Loads files created by using the _Save As..._ feature in Emulicious' memory editor: `.vrm` (VRAM), `.pal` (Palettes) and `.bin` (OAM) are added, depending on which of them are present. It does not matter which of the three you select in the file picker. Instead of adding and configuring 7 _File_&#8288;s, this feature does this automatically.
+  - _Auto-Add Emulicious Exports..._: Loads files created by using the _Save As..._ feature in Emulicious' memory editor. `.vrm` (VRAM), `.pal` (Palettes) and `.bin` (OAM) are added, depending on which of them are present. It does not matter which of the three you select in the file picker. Instead of adding and configuring 7 _File_&#8288;s, this feature does this automatically.
 - _New File_: Same as _Add File_, but the _File_ does not have to exist and is not loaded (but saved) when done.
-- _Edit Offsets_: Configure the selected _File_.
+- _Edit Offsets_: Configure the selected _File_ again. When done, the tool will ask you if you want to load the _File_.
 - _Save As_: Pick a new file name for the selected _File_. The _File_ is saved when done.
 - _Remove File_: Remove the selected file from the list. The _File_ will no longer be written when you save, but the current content will be kept in memory.
 - _Reload Files_: Load all _File_&#8288;s like they were just added. Does not wipe memory before, so memory that no longer corresponds to a _File_ (but did so before) is retained.
 
+Non-obvious usage:
+- Drag and drop to move _File_&#8288;s. Naturally, this only comes into the next time you load your project or click _Reload Files_.
+
 
 ### Tiles
 
-Just a viewer of the tile data in VRAM. Left is bank 0, right is bank 1.
+Just a viewer of the tile data in VRAM. Left is bank 0, right is bank 1. Tiles cannot be edited in this window, but only in the _Main Preview & Editor_, meaning that the tile must be visible there.
 
 Non-obvious usage:
 - Drag and drop to swap tiles. Hold <kbd>Ctrl</kbd> to copy instead.
@@ -104,10 +103,15 @@ The color editor can be used to edit the selected color. You have various option
 - Edit hex color (CSS)
 - Set the color to the color in the circle in the top right of the group box. This circle holds a color picked from your desktop (and most-importantly Editor overlays). To change it, click the circle, hold your mouse button and release it on the pixel to pick the color from.
 
+Even without the editor, you can double-click either of the two selected colors to pick a color using the Windows color picker. (Does not work if that color is the transparent color.)
+
+Non-obvious usage:
+- Drag and drop to swap color. Hold <kbd>Ctrl</kbd> to copy instead.
+
 
 ### OAM
 
-Displays OAM content. Each object is represented by an image of its tile(s), and a four-line label with its properties (OAM data): First row is Y, second is X, third is tile bank and number, fourth is flags. The flags are displayed as follows:
+Displays OAM content. Each object is represented by an image of its tile(s), and a four-line label with its properties (OAM data): First row is Y, second is X, third is tile bank and number, fourth is flags. The label becomes gray when the object's rectangle is entirely outside of the viewport. The flags are displayed as follows:
 - `P` is for priority
 - `Y` is for Y flip
 - `X` is for X flip
@@ -120,7 +124,7 @@ Edit OAM by clicking the corresponding row in the label to the right of the imag
 
 Non-obvious usage:
 - Drag and drop on _Main Preview & Editor_ to place.
-- Drag and drop on other OAM to copy (will soon be changed to swap, with modifier hotkeys to move and copy).
+- Drag and drop to swap OAM. Hold <kbd>Ctrl</kbd> to copy and <kbd>Shift</kbd> to move instead (if both are held, copy takes precedence).
 
 
 ### Main Preview & Editor
